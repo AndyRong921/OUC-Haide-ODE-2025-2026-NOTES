@@ -1,0 +1,2249 @@
+% ========= ODE-§1（使用 ctexbook + easybase/eb-elegantbook）=========
+\documentclass[UTF8,openany,zihao=-4]{ctexbook}
+\usepackage{easybase}
+\usepackage[lang=cn]{eb-elegantbook}
+\newcommand{\remarkinfo}[1]{\par\textbf{备注：}#1}
+% —— 页眉：横线 + 当前 section 标题 —— 
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{} 
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead[L]{\nouppercase{\rightmark}}
+\fancyhead[R]{\thepage}
+\makeatletter
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+\makeatother
+
+% 常用包
+\usepackage{amsmath,amssymb,amsfonts,bm}
+\usepackage{physics}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{float}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+\setlist{nosep}
+
+% —— 若模板命令不存在，则定义为 no-op（防止未装 easybook 报错） ——
+\makeatletter
+\@ifundefined{SetTocStyle}{\newcommand\SetTocStyle[3][]{}}{}
+\@ifundefined{UseTocStyle}{\newcommand\UseTocStyle[3][]{}}{}
+\@ifundefined{btocgroup}{\newcommand\btocgroup{}}{}
+\@ifundefined{etocgroup}{\newcommand\etocgroup{}}{}
+\@ifundefined{subtitle}{\newcommand\subtitle[1]{}}{}
+\@ifundefined{bioinfo}{\newcommand\bioinfo[2]{}}{}
+\@ifundefined{titlerule}{\newcommand\titlerule{}}
+\@ifundefined{codehigh}{\newcommand\codehigh{}}
+\makeatother
+
+% —— 关键：目录与编号深度（要放在 \begin{document} 之前） ——
+\setcounter{secnumdepth}{2} % 编号到 subsection（需要更深可调为 3）
+\setcounter{tocdepth}{2}    % 目录显示到 subsection
+% ——— 书籍信息 ———
+\title{常微分方程-2025年秋季学期}
+
+\author {容志谨（课程助教）}
+\date{}
+\bioinfo{联系方式}{rzj@stu.ouc.edu.cn}
+
+% ———（可选）目录样式：若样式包未提供这些命令，上面的 no-op 会自动忽略 ———
+\SetTocStyle{chapter}{emph}{
+  insert=\bigskipamount,
+  toctitlerule=\titlerule*[.5pc]{.},
+  pagenumberformat=\textbf
+}
+\SetTocStyle{section}{sub1}{tocindent=2em}
+\SetTocStyle{subsection}{sub1}{tocindent=3em}
+\SetTocStyle{subsubsection}{sub2}{tocindent=3.8em}
+\UseTocStyle{subsubsection}{sub2}{toc}
+
+\begin{document}
+\maketitle
+\frontmatter
+\tableofcontents
+\mainmatter
+% —— 无编号标题也能入目录并设置页眉 —— 
+\newcommand{\mychapter}[1]{%
+  \chapter*{#1}%
+  \addcontentsline{toc}{chapter}{#1}%
+  \markboth{#1}{#1}%
+}
+\newcommand{\mysection}[1]{%
+  \section*{#1}%
+  \addcontentsline{toc}{section}{#1}%
+  \markright{#1}%
+}
+% （如还要小节入目录，可再做 \mysubsection 同理）
+\setcounter{tocdepth}{2} % 目录深度按需设定
+% ===================== 正文开始 =====================
+\btocgroup
+\UseTocStyle{chapter}{emph}{toc}
+\mychapter{§1 微分方程概论}
+\etocgroup
+
+\mysection{§1.1 微分方程概述}
+
+\paragraph*{例1（元素衰减）}
+\[
+\frac{d R(t)}{dt}=-k R(t)
+\ \Rightarrow\ 
+\frac{1}{R(t)}\,dR(t)=-k\,dt
+\ \Rightarrow\
+\ln R(t)=-kt+C_1,\quad R(t)=R_0 e^{-kt}.
+\]
+
+\paragraph*{例2（物体冷却，Newton 冷却定律）}
+\[
+\frac{dx}{dt}=-k\bigl(x-\theta_0\bigr).
+\]
+
+\paragraph*{例3（传染病模型）}
+\[
+N\,\frac{di}{dt}=\lambda\,N\,S\cdot i
+\ \Rightarrow\ 
+\frac{di}{dt}=\lambda\,i(1-i).
+\]
+
+\paragraph*{例4（单摆）}
+\[
+\frac{d^2\varphi}{dt^2}=-\frac{g}{\ell}\sin\varphi.
+\]
+当 $\varphi$ 很小时 $\sin\varphi\approx \varphi$，得
+\[
+\frac{d^2\varphi}{dt^2}+\frac{g}{\ell}\,\varphi=0.
+\]
+若有阻尼：
+\[
+\frac{d^2\varphi}{dt^2}+\frac{\mu}{m}\frac{d\varphi}{dt}
++\frac{g}{\ell}\,\varphi=0.
+\]
+若有外力：
+\[
+\frac{d^2\varphi}{dt^2}+\frac{\mu}{m}\frac{d\varphi}{dt}
++\frac{g}{\ell}\,\varphi=\frac{1}{m\ell}F(t),
+\]
+给定初值：$\varphi(0)=\varphi_0,\ \dot\varphi(0)=v_0$。
+
+\mysection{§1.2 微分方程的基本概念}
+
+\section*{一、ODE 的定义}
+联系自变量、因变量及其导数的等式称为微分方程。
+\begin{align}
+&\frac{d^2y}{dt^2}+b\frac{dy}{dt}+c\,y=f(t), \tag{1}\\
+&\left(\frac{dy}{dt}\right)^2+t\frac{dy}{dt}+y=0, \tag{2}\\
+&\frac{\partial^2 T}{\partial x^2}+\frac{\partial^2 T}{\partial y^2}=0. \tag{3}
+\end{align}
+
+\section*{二、分类}
+\begin{enumerate}[label=\arabic*)]
+\item 按自变量个数：
+\[
+\left\{
+\begin{aligned}
+&\text{ODE：自变量只有一个（(1)(2)）；}\\
+&\text{PDE：自变量不止一个(3)。}
+\end{aligned}
+\right.
+\]
+
+\item 线性与非线性：
+\[
+\left\{
+\begin{aligned}
+&\text{线性方程：函数及其各阶导数为一次有理式；((1)(3))}\\
+&\text{非线性方程：非线性的方程。（2）}
+\end{aligned}
+\right.
+\]
+
+\item 阶数：方程中出现的未知函数的最高阶导数的阶数
+\[
+\left\{
+\begin{aligned}
+&\text{一阶方程：(2)}\\
+&\text{二阶方程:((1)(3))}
+\end{aligned}
+\right.
+\]
+\end{enumerate}
+
+\paragraph*{Rem.}
+\begin{enumerate}[label=(\arabic*)]
+\item 一阶方程：$F(t,y,y')=0$ 或 $y'=f(t,y)$。
+\item $n$ 阶方程：$F(t,y,y',\dots,y^{(n)})=0$ 或 $y^{(n)}=f\bigl(t,y,\dots,y^{(n-1)}\bigr)$。
+\item 一阶显式方程有时可化成微分形式：
+\[
+\frac{dy}{dx}=-\frac{M(x,y)}{N(x,y)}
+\ \Rightarrow\
+M(x,y)\,dx+N(x,y)\,dy=0.
+\]
+\item $n$ 阶线性微分方程的一般形式：
+\[
+\frac{d^{n}y}{dt^{n}}+a_1(t)\frac{d^{n-1}y}{dt^{n-1}}
++\cdots+a_n(t)\,y=f(t).
+\]
+\end{enumerate}
+\paragraph*{例}
+$y\,y''+1=0$ 为二阶非线性微分方程；$y'=y(y(x))$ 为非微分方程。
+
+\section*{三、方程的解}
+
+\subsection*{1. 定义}
+设 $y=\varphi(t)$ 在区间 $I$ 上连续且有到 $n$ 阶导数，
+若将 $y=\varphi(t)$ 及各阶导数代入
+\[
+F\bigl(t,y,y',\dots,y^{(n)}\bigr)=0\tag{$\ast$}
+\]
+恒成立，则称 $y=\varphi(t)$ 为 $(\ast)$ 在 $I$ 上的一解。
+
+\paragraph*{例}
+$y''+y=0$，$I=\mathbb{R}$。
+$y=7\sin t,\ y=3\cos t$ 均是这个方程的特解；
+\[
+y=C_1\sin t+C_2\cos t\quad \text{为通解。}
+\]
+
+\paragraph*{Rem.}
+\begin{enumerate}[label=(\arabic*)]
+\item 区间 $I$ 经常简略，简称为方程的一个解。
+\item 若关系式 $\Phi(x,y)=0$ 确定的隐函数 $y=\varphi(x)$ 为方程 $(\ast)$ 的解，
+则称 $\varphi(x)$ 为方程 $(\ast)$ 的隐式解。
+\end{enumerate}
+
+\paragraph*{例}
+\[
+\frac{dy}{dx}=-\frac{x}{y}.
+\]
+
+由此得
+\[
+x\,dx+y\,dy=0 \;\;\Rightarrow\;\; x^2+y^2=C.
+\]
+
+因此 $x^2+y^2=C$ 为\;隐式解。
+
+若取 $C=1$，则
+\[
+x^2+y^2=1
+\]
+为隐式解。对应的显式解为
+\[
+y=\pm\sqrt{1-x^2},
+\]
+即 $y=\sqrt{1-x^2}$ 与 $y=-\sqrt{1-x^2}$。
+
+\subsection*{2. 方程的通解}
+
+\paragraph*{定义}
+含有 $n$ 个相互独立任意常数 $C_1,\dots,C_n$ 的解
+\[
+y=\varphi\bigl(t,C_1,\dots,C_n\bigr)
+\]
+称为 $(\ast)$ 的通解。
+\paragraph*{独立性判据}
+存在 $(C_1,\dots,C_n)$ 使雅可比
+\[
+\frac{\partial(\varphi,\varphi',\dots,\varphi^{(n-1)})}
+{\partial(C_1,\dots,C_n)}\neq 0,
+\]
+其中 $\varphi=\varphi(t,C_1,\dots,C_n)$，
+$\varphi'=\dfrac{\partial\varphi}{\partial t}$，
+$\varphi^{(n-1)}=\dfrac{\partial^{\,n-1}\varphi}{\partial t^{\,n-1}}$。
+
+\paragraph*{例} 验证$y=C_1\sin t+C_2\cos t$ 是 $y''+y=0$ 的通解：、
+\paragraph*{解} 
+\[
+y' = C_1\cos t - C_2\sin t,\quad
+y''=-C_1\sin t - C_2\cos t,
+\]
+代入 $y''+y=0$ 成立；且
+\[
+\frac{\partial(y,y')}{\partial(C_1,C_2)}
+=
+\begin{vmatrix}
+\sin t & \cos t\\
+\cos t & -\sin t
+\end{vmatrix}
+=-1\neq 0.
+\]
+因此$C_1,C_2$相互独立，所以$y=C_1\sin t+C_2\cos t$ 是 $y''+y=0$ 的通解
+
+\paragraph*{反例}$y=C_1\sin t+C_3\cos t$ 不是通解，因为
+\[
+\frac{\partial(y,y')}{\partial(C_1,C_3)}
+=
+\begin{vmatrix}
+\sin t & \cos t\\
+\cos t & \cos t
+\end{vmatrix}
+=0.
+\]
+
+\subsection*{3. 方程的特解}
+\paragraph*{定义}
+满足特定条件的解称为特解（即不包含任意常数的解）。
+\paragraph*{例}
+\[
+\begin{cases}
+y''+y=0,\\
+y(0)=0,\ y'(0)=1
+\end{cases}
+\Rightarrow \text{有通解} y=C_1\sin t+C_2\cos t,\ 
+\text{其中 } C_2=0,\ C_1=1\text{为特解}
+\]
+
+\subsection*{4. 定解条件与初值问题}
+\paragraph*{定解条件} 初值条件或边值条件
+\paragraph*{定解问题} 方程 $+$ 定解条件（初值问题【Cauchy问题】/边值问题）。
+\paragraph*{例}
+\[
+ n\text{ 阶初值问题：}\ 
+\begin{cases}
+F\bigl(t,y,y',\dots,y^{(n)}\bigr)=0 \\
+y(t_0)=y_0,\ \dots,\ y^{(n-1)}(t_0)=y_0^{(n-1)}.
+\end{cases}
+\]
+
+
+
+\paragraph*{例1}
+\[
+\begin{cases}
+\displaystyle \frac{d^2y}{dt^2}+5\frac{dy}{dt}+4y=0,\\[.3em]
+y(0)=2,\ \displaystyle \left.\frac{dy}{dt}\right|_{t=0}=1
+\end{cases}
+\]
+\paragraph*{解1}
+猜想 $y=e^{\lambda t}$是一个解，则有 $(\lambda^2+5\lambda+4)=0\Rightarrow \lambda=-1,-4$。\\
+通解 $y=C_1 e^{-t}+C_2 e^{-4t}$，$y'=-C_1 e^{-t}-4C_2 e^{-4t}$。\\
+由初值
+\[
+\begin{cases}
+C_1+C_2=2,\\
+-C_1-4C_2=1
+\end{cases}
+\Rightarrow C_1=3,\ C_2=-1,
+\]
+特解 $y=3e^{-t}-e^{-4t}$。
+
+\medskip
+\paragraph*{例2}
+求函数族 $y=C_1 e^x \cos x + C_2 e^x \sin x \quad (x)$ 所满足的微分方程
+\paragraph*{解2}
+\[
+y' = C_1 e^x(\cos x - \sin x) + C_2 e^x(\sin x + \cos x) \tag{1}
+\]
+\[
+y'' = C_1 e^x(-2\sin x) + C_2 e^x(2\cos x) \tag{2}
+\]
+
+\[
+\frac{\partial(y,y')}{\partial(C_1,C_2)}
+= \begin{vmatrix}
+e^x \cos x & e^x \sin x \\
+e^x(\cos x - \sin x) & e^x(\sin x + \cos x)
+\end{vmatrix} \neq 0,
+\ C_1, C_2 \ \text{相互独立}
+\]
+
+据 (x), (1) 式有
+\[
+C_1 = e^{-x}\bigl[y(\sin x + \cos x) - y' \sin x\bigr],
+\quad
+C_2 = e^{-x}\bigl[y(\sin x - \cos x) + y' \cos x\bigr]
+\]
+
+代入 (2) 有：
+\[
+y'' - 2y' + 2y = 0
+\]
+
+若考虑求解 $y'' - 2y' + 2y = 0$,特征方程 $\lambda^2 - 2\lambda + 2 = 0$，
+特征根 $\lambda = 1 \pm i$
+
+通解 $y = C_1 e^{(1+i)x} + C_2 e^{(1-i)x}$
+\[
+y = C_1 e^x \cos x + C_2 e^x \sin x
+\]
+
+\section*{四、微分方程及其解的几何近似}
+
+考虑：$\dfrac{dy}{dx}=f(x,y)$ 其中 $f(x,y)$ 是平面区域 $D$ 内的连续函数
+
+\paragraph*{定义} 设 $y=\varphi(x)$ 是方程在区间 $I$ 上的解，则曲线 $y=\varphi(x)$ 在 $xOy$ 平面
+是一条光滑曲线，称它为方程的\textbf{积分曲线}。
+
+\bigskip
+
+\paragraph*{Rem.}
+(1) 方程的通解 $\varphi(x,C)$ 对应 $xOy$ 平面上的一族曲线，称为
+积分曲线族。\\
+(2)满足条件 $y(x_0)=y_0$ 的特解曲线是平面上过 $(x_0,y_0)$ 的一条积分曲线。
+
+\medskip
+
+\paragraph*{定义}在区域 $D$ 内每一点 $P(x_0,y_0)$ 作一小直线段，满足斜率为 $f(x_0,y_0)$，
+称带有箭头段组成区域 $D$ 方程的方向场。小直线段为方程在 $P(x_0,y_0)$ 的线素。方程的任何一条积分曲线和它的方向场是吻合的。
+
+\paragraph*{定义} 方向场中方向相同的点的几何轨迹称为等斜线。
+ 
+考虑初值问题
+\[
+\begin{cases}
+\dfrac{dy}{dt}=f(t,y),\\
+y(t_0)=y_0.
+\end{cases}
+\]
+
+的几何说明：给定方程，在平面区域 $D$ 内初值 $y(t_0)=y_0$。上述定与方向场，求解初值问题即求过 $(t_0,y_0)$ 且与方向场吻合的积分曲线。
+
+\paragraph*{例1} $D=[-2,2]\times[-2,2]$, 求 $\dfrac{dy}{dt}=-y$ 的方向场。
+\paragraph*{解1}
+\[
+\begin{tikzpicture}[scale=1]
+\draw[->] (-2.5,0)--(2.5,0) node[right]{$t$};
+\draw[->] (0,-2.5)--(0,2.5) node[above]{$y$};
+% 简单画几个方向线段，实际可用 direction field 包更精细
+\foreach \x in {-2,-1.5,...,2}
+  \foreach \y in {-2,-1.5,...,2}
+    \draw[->,gray] (\x,\y) -- ++(0.3,-0.3*\y);
+\end{tikzpicture}
+\]
+
+\paragraph*{例2}考虑初值问题的近似解
+\[
+y(t_0+\Delta)\approx y(t_0)+f(t_0,y_0)\,\Delta,\quad 0<\Delta<\delta
+\]
+\paragraph*{解2}
+\[
+\varphi(t)=
+\begin{cases}
+y_0+f(t_0,y_0)(t-t_0), & t_0\leq t \leq t_0+\delta,\\
+y_1+f(t_1,y_1)(t-t_1), & t_1\leq t \leq t_1+\delta,\\
+\qquad \vdots & \\
+y_n+f(t_n,y_n)(t-t_n), & t_n\leq t \leq t_n+\delta,
+\end{cases}
+\qquad \text{(Euler 近似)}
+\]
+
+其中 $t_k=t_0+k\Delta,\;\; y_k=\varphi(t_k)$。
+
+\mychapter{§2 一阶微分方程的初等解法}
+$
+dy = f(x)\,dx, \ \ dx = \frac{\partial u}{\partial x}\,dx + \frac{\partial u}{\partial y}\,dy 
+\quad （全微分方程），du(x,y)=0 \;\;\Rightarrow\;\; u(x,y)=c
+$
+
+内容：变量分离方程，齐次微分方程，全微分方程，积分因子，隐式微分方程。
+
+\mysection{§2.1 变量分离方程与变量替换}
+
+\section*{一、变量分离方程}
+
+\[
+\frac{dy}{dx}=f(x)\cdot g(y) \tag{1}
+\]
+
+其中 $f(x), g(y)$ 分别是关于 $x,y$ 的连续函数。
+
+变为：$\frac{1}{g(y)}\,dy=f(x)\,dx,\quad g(y)\neq 0$
+
+两边同时积分：$\displaystyle \int \frac{1}{g(y)}dy=\int f(x)\,dx$
+
+通解：$G(y)=F(x)+c$，其中 $G(y)$ 是 $\frac{1}{g(y)}$ 的原函数，$F(x)$ 是 $f(x)$ 的原函数。
+
+若 $g(y_0)=0$，则 $y=y_0$ 也是方程 (1) 的解。
+
+\paragraph*{Rem.} 若 $g(y)=0$ 不在通解中，补上即可。
+
+\paragraph*{例1}
+\[
+\frac{dy}{dx}=-\frac{x}{y}
+\]
+
+\paragraph*{解1}
+$y\,dy=-x\,dx,\;\;\int y\,dy=\int -x\,dx,\;\;\tfrac{1}{2}y^2+\tfrac{1}{2}x^2=c,$
+
+通解 $x^2+y^2=c$
+
+\paragraph*{例2}
+\[
+\frac{dy}{dx}=\frac{y}{x}
+\]
+
+\paragraph*{解2}
+$\frac{1}{y}dy=\frac{1}{x}dx,\;\;\int \frac{1}{y}dy=\int \frac{1}{x}dx,\;\;\ln|y|=\ln|x|+c$
+
+通解 $y=cx$
+
+\paragraph*{例3} 设方程 $\dfrac{dy}{dx}=p(x)\,y$ 的通解，其中 $p(x)$ 为连续函数。
+
+\paragraph*{解3} (1) $y\neq 0$ 时：
+\[
+\frac{1}{y}dy=p(x)dx,\quad \int \frac{1}{y}dy=\int p(x)dx
+\]
+\[
+\ln y=\int p(x)dx+C,\quad y=c\cdot e^{\int p(x)dx}
+\]
+
+\paragraph*{例4} 求解 $\dfrac{dy}{dx}=y^2\cos x$ 的特解，其中$y(0)=1$。
+
+\paragraph*{解4}$y\neq 0,\;\; \int \frac{1}{y^2}dy=\int \cos x\,dx,\;\; -\frac{1}{y}=\sin x+C$
+
+$
+y=\frac{1}{-\,\sin x+C}, \quad \text{有奇解 } y=0.
+$
+
+由 $y(0)=1,\; C=-1,\; y=\dfrac{1}{1-\sin x}$
+
+\paragraph*{Rem.} 通解并非所有解。
+
+
+\section*{二、微分方程的变量分离方程}
+\[
+M(x)N(y)\,dx+P(x)Q(y)\,dy=0 \tag{2}
+\]
+
+其中 $M(x),N(y),P(x),Q(y)$ 均为连续函数。
+
+若 $N(y)P(x)\neq 0$，则：
+\[
+\frac{M(x)}{P(x)}dx+\frac{Q(y)}{N(y)}dy=0
+\]
+
+通解 $F(x)+Q(y)=C$，其中 $F(x),Q(y)$ 为 $\dfrac{M(x)}{P(x)},\dfrac{Q(y)}{N(y)}$ 的原函数。
+
+若 $P(x_0)=0$，则 $x=x_0$ 也是方程的解。
+
+若 $N(y_0)=0$，则 $y=y_0$ 也是方程的解。
+
+\paragraph*{例5} $x(y^2-1)\,dx+y(y^2-1)\,dy=0$
+
+\paragraph*{解5} 当 $x\neq \pm1$，$y\neq \pm1$ 时：
+\[
+\int \frac{x}{y^2-1}dx+\int \frac{y}{y^2-1}dy=0
+\]
+
+$$\ln|x^2-1|+\ln|y^2-1|=C\;(C\in\mathbb{R})$$
+
+通解为$(x^2-1)(y^2-1)=C,(C\neq0)$
+
+显然，$x=\pm1,y=\pm1$ 也是解($C=0$)
+
+因此通解为 $(x^2-1)(y^2-1)=C, C\text{为任意常数}。$
+
+
+
+\section*{三、齐次方程}
+
+\[
+\frac{dy}{dx}=f\!\left(\frac{y}{x}\right) \tag{3}
+\]
+
+其中 $f(u)$ 为 $u$ 的连续函数。
+
+变量替换：令 $u=\tfrac{y}{x}$，则 $y=ux,\;\dfrac{dy}{dx}=u+x\dfrac{du}{dx}$
+
+则 $u+x\dfrac{du}{dx}=f(u)$
+
+若 $f(u)-u \neq 0,\; \frac{1}{f(u)-u}du = \frac{1}{x}dx$，通解为 $G(u)=\ln x+C$
+
+原方程通解：$G\!\left(\tfrac{y}{x}\right)=\ln x+C$
+
+若 $f(u_0)=u_0$，则 $u=u_0x$ 也是解。
+
+---
+
+\paragraph*{例6} 
+\[
+\frac{dy}{dx}=\frac{y}{x}+\tan\frac{y}{x}
+\]
+
+\paragraph*{解6}  
+令 $u=\tfrac{y}{x}$，则 $u+x\dfrac{du}{dx}=u+\tan u$
+
+当 $\tan u\neq 0$ 时
+\[
+\int \frac{1}{\tan u}du=\int \frac{1}{x}dx,\quad \ln|\sin u|=\ln|x|+C
+\]
+
+通解为 $\sin \tfrac{y}{x}=C x\;(C\neq 0)$
+
+当 $\tan u=0$ 时，$\sin u=0$，也是解
+
+原方程通解为 $\sin \tfrac{y}{x}=Cx,\; C\text{为任意常数}$
+
+
+\paragraph*{Rem.} 
+
+(1) $\dfrac{dy}{dx}=f(x,y)$ 是齐次方程时满足 $f(x,y)$ 是 $x,y$ 齐次函数，此时
+\[
+\frac{dy}{dx}=f(x,y)=f(tx,ty)=f\!\left(1,\frac{y}{x}\right)=g\!\left(\frac{y}{x}\right)
+\]
+
+(2) 对 $\dfrac{dy}{dx}=\dfrac{M(x,y)}{N(x,y)}$，其中 $M(x,y)$ 和 $N(x,y)$ 都是 $x,y$ 的$m$次齐次函数，即
+\[
+M(tx,ty)=t^m M(x,y),\quad N(tx,ty)=t^m N(x,y),
+\]
+
+则方程可化为齐次方程，此时
+\[
+\frac{dy}{dx}=\frac{M(x,y)}{N(x,y)}=\frac{M(tx,ty)}{N(tx,ty)}=\frac{t^m M(x,y)}{t^m N(x,y)}=\frac{M(1,\frac{y}{x})}{N(1,\frac{y}{x})}=g\!\left(\frac{y}{x}\right)
+\]
+
+
+
+\paragraph*{例7} 
+\[
+x\frac{dy}{dx}+2\sqrt{xy}=y \quad (x<0)
+\]
+\paragraph*{解7} 
+\[
+\frac{dy}{dx}=\frac{y-2\sqrt{xy}}{x}=\frac{y}{x}+2\sqrt{\frac{y}{x}}
+\]
+
+令 $u=\frac{y}{x}$，则 $u+x\dfrac{du}{dx}=u+2\sqrt{u},\; x\dfrac{du}{dx}=2\sqrt{u}$
+
+$u\neq 0$ 时
+\[
+\frac{1}{2\sqrt{u}}du=\frac{1}{x}dx,\sqrt{u}=\ln(-x)+C
+\]
+\[
+u=(\ln(-x)+C)^2,\;\; \ln(-x)+C>0
+\]
+
+$u=0$ 时也是解
+
+原方程的通解：$y=(\ln(-x)+C)^2,\;\; \ln(-x)+C>0$  ,特解：$y=0$。
+
+
+\paragraph*{例8} 
+\[
+(x^2+y^2)\frac{dy}{dx}=2xy
+\]
+\paragraph*{解8} 
+令 $u=\frac{y}{x}$，则
+\[
+u+x\frac{du}{dx}=\frac{2u}{1+u^2}
+\]
+
+有通解 $\frac{xy}{x^2-y^2}=Cx$，特解 $y=x,\; y=-x$
+
+
+\section*{四、可化为齐次方程的方程}
+
+\[
+\frac{dy}{dx}=\frac{a_1x+b_1y+c_1}{a_2x+b_2y+c_2} \tag{4}
+\]
+
+其中 $a_1,a_2,b_1,b_2,c_1,c_2$ 为常数。
+
+若 $c_1=c_2=0$，则 $\frac{dy}{dx}=\frac{a_1x+b_1y}{a_2x+b_2y}$ 为齐次方程。
+
+若 $c_1\neq 0$ 或 $c_2\neq 0$：
+
+当 $\begin{vmatrix} a_1 & b_1\\ a_2 & b_2\end{vmatrix}=0$ 时，令 $\tfrac{a_1}{a_2}=\tfrac{b_1}{b_2}=k$，则：
+\[
+\frac{dy}{dx}=\frac{k(a_2x+b_2y)+c_1}{a_2x+b_2y+c_2}=f(a_2x+b_2y)
+\]
+
+化简后
+\[
+\frac{du}{dx}=a_2+b_2f(u)
+\]
+
+当 $\begin{vmatrix} a_1 & b_1\\ a_2 & b_2\end{vmatrix}\neq 0$ 时，
+\[
+\begin{cases}
+ a_1x+b_1y+C_1=0\\
+a_2x+b_2y+C_2=0
+\end{cases}
+\]
+
+有交点 $(\alpha,\beta)\neq (0,0)$.令
+\[
+\begin{cases}
+X=x-\alpha,\\
+Y=y-\beta,
+\end{cases}
+\quad
+\frac{dY}{dX}=\frac{a_1X+b_1Y}{a_2X+b_2Y}=g\!\left(\frac{Y}{X}\right)
+\]
+
+
+
+\paragraph*{例9}
+\[
+\frac{dy}{dx}=\frac{x-y+1}{x+y-3}
+\]
+\paragraph*{解9}
+\[
+\begin{cases}
+x-y+1=0\\
+x+y-3=0
+\end{cases}
+\;\;\Rightarrow (1,2),\;\; 令
+\begin{cases}
+X=x-1\\
+Y=y-2
+\end{cases}
+\]
+
+\[
+\frac{dY}{dX}=\frac{X-Y}{X+Y}
+\]
+
+令 $u=\tfrac{Y}{X}$，则 $u+X\dfrac{du}{dX}=\dfrac{1-u}{1+u},\;\; X\dfrac{du}{dX}=\dfrac{1-2u-u^2}{1+u}$
+
+若 $u^2+2u-1\neq 0$，则
+\[
+\int \frac{1+u}{1-2u-u^2}du=\int \frac{1}{X}dX
+\]
+
+即
+\[
+-\tfrac{1}{2}\ln|u^2+2u-1|=\ln|X|+C
+\]
+
+\[
+X^2\cdot(u^2+2u-1)=C\quad (C\neq 0)
+\]
+
+显然 $u^2+2u-1=0$ 对应的 $u=u_0$ 也是解。
+
+因此通解为 $X^2(u^2+2u-1)=C,\; C\text{为任意常数}$
+
+代回原变量：
+\[
+(y-2)^2+2(x-1)(y-2)-(x-1)^2=C
+\]
+
+\paragraph*{Rem.} 更一般方程情形：
+\[
+\frac{dy}{dx}=f\!\left(\frac{a_1x+b_1y+c_1}{a_2x+b_2y+c_2}\right)
+\]
+可类似求解。
+
+
+\paragraph*{例10}
+\[
+\frac{dy}{dx}=2(\frac{y-2}{(x+y-1)})^2
+\]
+
+\paragraph*{解10}
+\[
+\begin{cases}
+y-2=0\\
+x+y-1=0
+\end{cases}
+\;\;\Rightarrow (-1,2),\;\; 令
+\begin{cases}
+X=x+1\\
+Y=y-2
+\end{cases}
+\]
+
+\[
+\frac{dY}{dX}=\frac{2Y^2}{(X+Y)^2}
+\]
+
+令 $u=\tfrac{Y}{X}$，则 $u+X\dfrac{du}{dX}=\dfrac{2u^2}{(1+u)^2}$,\;\; 即 $X\dfrac{du}{dX}=-\frac{u+u^2}{(1+u)^2}$
+
+若 $u\neq 0$，则
+
+
+\[
+\int \frac{(1+u)^2}{u(1+u^2)}du=\int -\frac{1}{X}dX
+\]
+
+\[
+\ln|u|+2\arctan u=-\ln|X|+C
+\]
+
+通解 $y-2 = C e^{-2arctan\frac{y-2}{x+1}},\;\; C\text{为任意常数}$
+
+
+
+
+
+
+
+\paragraph*{Rem.} 
+\[
+\frac{dy}{dx}=f(ax+by+c),\quad \text{令}\; u=ax+by+c
+\]
+
+
+\[
+y f(xy)\,dx+xg(xy)\,dy=0 \quad (\;\text{令}\; u=xy\;)
+\]
+
+\[
+x^2\frac{dy}{dx}=f(xy) \quad (\;\text{令}\; u=xy\;)
+\]
+
+\[
+\frac{dy}{dx}=xf\!\left(\frac{y}{x^2}\right) \quad (\;\text{令}\; u=\frac{y}{x^2}\;)
+\]
+
+
+\section*{五、应用举例}
+
+\paragraph*{例} 聚照灯反射镜面的形状  
+要求：将点光源射出的光线，平行地反射出去，以保证聚照灯有良好的方向性。
+
+\paragraph*{解} 
+建立坐标系,设曲线 
+\[
+\begin{cases}
+y=f(x)\\
+z=0
+\end{cases}
+\]
+
+绕 $x$ 轴旋转形成曲面
+
+问题归结为求 $xOy$ 平面上曲线 $y=f(x)z$ 的方程：
+
+\[
+\frac{dy}{dx}=\tan\alpha_2=-\frac{y}{x+\sqrt{x^2+y^2}}\quad (\text{齐次方程})
+\]
+
+亦即
+\[
+\frac{dx}{dy}=\frac{x+\sqrt{x^2+y^2}}{y}=\frac{x}{y}+\sqrt{(\frac{x}{y})^2+1}\cdot\operatorname{sgn}(y)
+\]
+
+令 $u=\frac{x}{y}$，则 $x=uy,\;\; u+y\frac{du}{dy}=u+\operatorname{sgn}(y)\sqrt{u^2+1}$  
+
+\[
+\frac{du}{\sqrt{u^2+1}}=\operatorname{sgn}(y)\cdot \frac{dy}{y}
+\]
+
+两边积分：
+\[
+\int \frac{du}{\sqrt{u^2+1}}=\int \frac{dy}{y}
+\]
+
+\[
+\ln(u+\sqrt{u^2+1})+C=\ln y,\quad C\cdot (u+\sqrt{u^2+1})=y
+\]
+
+代入 $u=\tfrac{x}{y}$，有
+\[
+C \cdot (x+\sqrt{x^2+y^2})=y^2, \ x^2+y^2 = \frac{y^4}{C^2}+x^2-2\frac{xy^2}{C}
+\]
+
+即
+\[
+1=\frac{y^2}{C^2}-\frac{2x}{C}, \ y^2=c^2+2Cx , \ C\text{为任意常数}
+\]
+
+
+反射镜面为旋转抛物面：
+\[
+y^2+z^2=C^2+2Cx
+\]
+
+
+
+\mysection{§2.2 线性微分方程与常数变易法}
+
+\section*{一、一阶线性常微分方程}
+
+\subsubsection*{1. 形式}
+\[
+\frac{dy}{dx}=P(x)\,y+Q(x) \tag{1}
+\]
+其中 $P(x),Q(x)$ 都是连续函数。
+
+\paragraph*{Rem.}  
+(i) 若方程为 $a(x)\dfrac{dy}{dx}+b(x)y+c(x)=0$，  
+在 $a(x)\neq 0$ 的区间上有：
+\[
+\frac{dy}{dx}+\frac{b(x)}{a(x)}y+\frac{c(x)}{a(x)}=0
+\]  
+
+(ii) 若称 $Q(x)\equiv 0$，则
+$
+\frac{dy}{dx}=P(x)y (2)
+$
+称为齐次方程；反之，$Q(x)\not\equiv 0$，称为非齐次方程。
+
+
+\subsubsection*{2. 常数变易法}  
+
+先求齐次方程 (2) 的通解：
+\[
+y=c\,e^{\int P(x)\,dx},\quad c\text{为任意常数}
+\]
+
+考虑 $y=c(x)\,e^{\int P(x)\,dx}$ 的导数：
+\[
+y'(x)=c'(x)\,e^{\int P(x)\,dx}+c(x)P(x)\,e^{\int P(x)\,dx}
+\]
+
+代入非齐次方程 (1)，得：
+\[
+Q(x)=c'(x)\,e^{\int P(x)\,dx},\quad 
+c'(x)=Q(x)\,e^{-\int P(x)\,dx}
+\]
+
+积分得：
+\[
+c(x)=\int Q(x)\,e^{-\int P(x)\,dx}\,dx+C
+\]
+
+因此非齐次方程通解为：
+\[
+y(x)=\left(\int Q(x)\,e^{-\int P(x)\,dx}\,dx+C\right)e^{\int P(x)\,dx}
+\]
+
+\paragraph*{Rem.} 线性非齐次方程通解的结构：
+\[
+y(x)=C\,e^{\int p(x)\,dx}\text{(齐次方程通解)}+\left(\int q(x)\,e^{-\int p(x)\,dx}\,dx\right)e^{\int p(x)\,dx}\text{(非齐次方程的一个特解)}
+\]
+
+
+
+
+\paragraph*{例1} 求解方程 $(x+1)\dfrac{dy}{dx}-ny=e^x(x+1)^{n+1},\; n\text{为常数}$。
+
+\paragraph*{解1} 
+\[
+\frac{dy}{dx}-\frac{n}{x+1}y=e^x(x+1)^{n}
+\]
+
+(i) 先求齐次方程的通解：
+\[
+\frac{dy}{dx}=\frac{n}{x+1}y
+\;\;\Rightarrow\;\;
+\int \frac{dy}{y}=\int \frac{ndx}{x+1},\;\;\Rightarrow\;\;
+y=C(x+1)^{n}
+\]
+
+(ii) 非齐次方程的通解：
+
+设$y=c(x)(x+1)^n$是方程的通解
+
+\[c'(x)\cdot(x+1)^n=e^x\cdot (x+1)^n,c(x)=e^x+C\]
+
+非齐次方程通解为：
+\[
+y=(e^x+C)(x+1)^n,\quad C\text{为任意常数}
+\]
+
+
+
+
+\paragraph*{例2} 
+\[
+\frac{dy}{dx}=\frac{y}{2x-y^2}
+\]
+\paragraph*{解2} 
+\[
+x=(-\ln(y)+C)\,y^2,\quad C\text{为任意常数}
+\]
+
+$y=0$ 也是解。
+
+
+\subsubsection*{3. 积分因子法}
+
+\[
+\frac{dy}{dx}-P(x)\,y=Q(x)
+\]
+
+考虑
+\[
+\frac{d}{dx}(y(x)\,z(x))=\frac{d}{dx}y(x)\cdot z(x)+\frac{d}{dx}z(x)\cdot y(x)
+\]
+
+有
+\[
+\frac{d}{dx}\bigl(e^{-\int P(x)\,dx}\,y(x)\bigr)
+=\frac{dy}{dx}\,e^{-\int P(x)\,dx}-p(x)\,e^{-\int P(x)\,dx}\,y=e^{-\int P(x)\,dx}\left(\frac{dy}{dx}-P(x)\,y\right)
+\]
+
+
+上式两边同乘 $e^{-\int P(x)\,dx}$：
+\[
+e^{-\int P(x)\,dx}\left(\frac{dy}{dx}-P(x)\,y\right)=e^{-\int P(x)\,dx}\,q(x)
+\]
+
+即
+\[
+e^{-\int P(x)\,dx}\,y=\int Q(x)\,e^{-\int P(x)\,dx}\,dx+C
+\]
+
+因此
+\[
+y=\left(\int q(x)\,e^{-\int p(x)\,dx}\,dx+C\right)e^{\int p(x)\,dx},\quad C\text{为任意常数}
+\]
+
+
+\subsubsection*{4. 一阶线性微分方程的初值问题}
+
+\[
+\begin{cases}
+\dfrac{dy}{dx}=P(x)\,y+Q(x),\\
+y(x_0)=y_0
+\end{cases}
+\]
+
+(1) 先求通解，再代入 $y(x_0)=y_0$，求出 $C$。
+
+(2) 
+\[
+y=C\,e^{\int_{x_0}^x P(t)\,dt}
++\int_{x_0}^x Q(s)\,e^{-\int_s^x P(t)\,dt}\,ds\cdot e^{\int_{x_0}^x P(t)\,dt}
+\]
+
+可求得 $C=y_0$：
+\[
+y=y_0\,e^{\int_{x_0}^x P(t)\,dt}
++\int_{x_0}^x Q(s)\,e^{-\int_s^x P(t)\,dt}\,ds\cdot e^{\int_{x_0}^x P(t)\,dt}
+\]
+
+
+\paragraph*{例3} 函数 $f(t)$ 在 $[0,+\infty)$ 上连续有界，证明方程
+\[
+\frac{dx}{dt}+x=f(t) \tag{$\ast$}
+\]
+所有解均在 $[0,+\infty)$ 上有界。
+
+\paragraph*{解3 \proof }  
+
+设 $y(t)$ 是方程 $(\ast)$ 上任意给定的解，令 $x(0)=x_0$，  
+则 $x(t)$ 一定满足
+\[
+x(t)=x_0 e^{\int_0^t (-1)\,dt}+\int_0^t f(s)e^{-\int_0^s (-1)\,dt}\,ds \cdot e^{-\int_0^t (-1)\,dt}
+= x_0 e^{-t}+\int_0^t f(s)e^s\,ds\cdot e^{-t}
+\]
+
+显然 $\exists M>0$ s.t. $|f(t)|\leq M,\;\forall t\in[0,+\infty)$。  
+
+从而
+\begin{align}
+从而\ |x(t)| 
+&= \bigl|x_0 e^{-t}+\int_0^t f(s)e^s ds \cdot e^{-t}\bigr| \\
+&\leq |x_0 e^{-t}|+\Bigl|\int_0^t f(s)e^s ds \cdot e^{-t}\Bigr| \\
+&\leq |x_0|+e^{-t}\cdot \int_0^t |f(s)|e^s ds \\
+&\leq |x_0|+e^{-t}\cdot M\int_0^t e^s ds \\
+&= |x_0|+e^{-t}\cdot (e^t-1)\cdot M \\
+&\leq |x_0|+M
+\end{align}
+
+因此 $x(t)$ 在 $[0,+\infty)$ 上有界。
+
+
+\subsubsection*{5. 线性方程的性质}
+
+(1) 齐次线性微分方程的解的线性组合仍是齐次方程的解。  
+齐次线性微分方程的解与非齐次线性微分方程的解之和仍是非齐次线性微分方程的解；非齐次线性微分方程两个任意解的差仍是解。  
+
+(2) 齐次线性微分方程的通解与非齐次线性微分方程的特解之和构成非齐次线性微分方程的通解。  
+
+(3) 线性微分方程的初值问题的解是存在唯一的。  
+
+\paragraph*{例3}
+\[
+\frac{dy}{dx}=6\frac{y}{x}-xy^2
+\]
+
+\paragraph*{解3}
+\[
+\frac{1}{y^2}\frac{dy}{dx}-6\frac{1}{x}\cdot \frac{1}{y}=-x,\quad
+\frac{d(\tfrac{1}{y})}{dx}+\frac{6}{x}\cdot \frac{1}{y}=x
+\]
+
+令 $z=\frac{1}{y}$，有：
+
+\[
+z=(\frac{1}{8}x^8+C)\cdot x^{-6}
+\]
+
+代回 $y$ 有：
+\[
+y=\frac{1}{\tfrac{1}{8}x^8+C\cdot x^{-6}}
+\]
+
+原方程 $y=0$ 也是解。
+
+
+
+
+\section*{二、Bernoulli 方程}
+\subsubsection*{1. 形式：}
+
+\begin{equation}
+\frac{dy}{dx} = P(x)y + Q(x)y^n \quad (n \neq 0,1) \tag{3}
+\end{equation}
+
+其中 $P(x), Q(x)$ 为连续函数
+
+\subsubsection*{2. 解法：}
+$y \neq 0$ 时
+\begin{equation}
+y^{-n}\frac{dy}{dx} = P(x)y^{1-n} + Q(x) \tag{4}
+\end{equation}
+
+\[
+\frac{d(y^{1-n})}{dx} = (1-n)P(x)y^{1-n} + (1-n)Q(x)
+\]
+
+令 
+
+\[
+z = y^{1-n}, \quad \frac{dz}{dx} = (1-n)P(x)z + (1-n)Q(x) \tag{5}
+\]
+
+设 (5) 式通解为 $z = \varphi(x,c)$
+
+则 (3) 式通解为 $y^{1-n} = \varphi(x,c), \quad c$ 为任意常数
+
+\paragraph*{Rem.} 
+\begin{itemize}
+\item 方程 (3) 中 $n = 0,1$ 时为线性方程；  
+\item 方程 (3) 中 $n>0$ 时有奇解 $\Rightarrow y=0$。
+\end{itemize}
+
+
+
+\paragraph*{例4} 
+\[
+\frac{dy}{dx} = \frac{1}{xy + x^3y^3}
+\]
+
+\paragraph*{解4} 
+\[
+\frac{dy}{dx} = yx + y^3x^3, \quad x^{-3}\frac{dy}{dx} = yx^{-2} + y^3
+\]
+
+令 $z = x^{-2}, \quad \frac{dz}{dx} = -2yz-2y^3$
+
+齐次方程：
+\[
+\frac{dz}{dx} = -2yz, \quad \text{有通解 } z = Ce^{-y^2}
+\]
+
+非齐次方程：
+\[
+z = C(y)e^{-y^2}, \quad C'(y)e^{-y^2} = -2y^3
+\]
+
+\[
+C(y) = \int -2y^3 e^{y^2} dy = -\int te^t dt = -(t-1)e^t + c= -(y^2-1)e^{y^2} + c
+\]
+
+通解：
+\[
+z = [-(y^2-1)e^{y^2} + c] e^{-y^2} = -(y^2-1) + Ce^{-y^2}
+\]
+
+原方程通解为
+\[
+x^{-2} = c e^{-y^2} - y^2 + 1
+\]
+
+
+
+\paragraph*{例5} 
+\[
+\frac{dy}{dx} = \frac{e^y + 3x}{x^2}
+\]
+
+\paragraph*{解5} 
+令 $u = e^y, \quad \frac{du}{dx} = e^y\frac{dy}{dx} $
+
+\[
+\frac{1}{u}\frac{du}{dx} = \frac{1}{x^2}u+\frac{3}{x} \ \ \text{即}\frac{du}{dx}=\frac{u^2}{x^2}+\frac{3u}{x},\frac{1}{u}=Cx^{-3}-\frac{1}{2}x^{-1}
+\]
+
+通解为
+\[
+\frac{1}{e^{y}} = C x^{-3} - \frac{1}{2}x^{-1}, \quad \text{C 为任意常数}
+\]
+
+
+
+\section*{三、Riccati 方程}
+
+\subsection*{1. 形式：}
+\begin{equation}
+\frac{dy}{dx} = P(x)y^2 + Q(x)y + R(x) \tag{6}
+\end{equation}
+
+其中 $P(x), Q(x), R(x)$ 为连续函数。
+
+\paragraph*{Rem.}
+\begin{itemize}
+  \item 1841 年，Liouville 证明 (6) 式一般情况下不能表示为初等函数解；
+  \item 若已知 (6) 的一个特解，则可求出通解。
+\end{itemize} 
+
+
+\subsection*{2. 解法：}
+设 (6) 有一特解 $\tilde{y}(x)$，设 $y(x) = z + \tilde{y}(x)$ 是 (6) 的解，  
+则代入 (6) 有
+\[
+\frac{dz}{dx} + \frac{d\tilde{y}}{dx} = P(x)(z^2 + 2z\tilde{y} + \tilde{y}^2) + Q(x)(z + \tilde{y}) + R(x)
+\]
+
+即
+\[
+\frac{dz}{dx} + \frac{dtilde{y}}{dx} = P(x)z^2 + (2P(x)\bar{y} + Q(x))z + P(x)\bar{y}^2 + Q(x)\bar{y} + R(x)
+\]
+
+由 $\tilde{y}$ 是 (6) 的特解，  
+\[
+\frac{dz}{dx} = P(x)z^2 + (2P(x)\tilde{y}+Q(x))z
+\]
+
+为 Bernoulli 方程。
+
+
+因此原方程通解为 $y = \varphi(x,c) + tilde{y}$。
+
+
+\paragraph*{例6} 
+\[
+y' = y^2 - x^2 + 1
+\]
+
+\paragraph*{解6} 
+显然，$y=x$ 是一个特解。  
+
+令 $y = x+z(x)$，则
+\[
+\frac{dz}{dx} = z^2 + 2xz
+\]
+
+通解为
+\[
+z = \left(-\int e^{-x^2}dx + C\right)e^{-x^2}
+\]
+
+原方程通解为
+\[
+y = x + e^{x^2}\cdot \left(-\int e^{-x^2}dx + C\right)^{-1}, \quad C\text{ 为任意常数}
+\]
+
+
+
+\mysection{§2.3 全微分方程和积分因子}
+
+
+
+\section*{一、全微分方程}
+
+(1) $d(xy) = x\,dy + y\,dx = 0$
+
+\[
+x\,dy + y\,dx = 0 \;\Rightarrow\; d(xy) = 0 \;\Rightarrow\; xy = C
+\]
+
+(2) $d\!\left(\frac{x}{y}\right) = \frac{y\,dx - x\,dy}{y^2} = 0$
+
+\[
+y\,dx - x\,dy = 0 \;\Rightarrow\; d\!\left(\frac{x}{y}\right)=0 \;\Rightarrow\; \frac{x}{y} = C
+\]
+
+(3) 设 $Oxy$ 平面存在力场，$\vec{F}(x,y) = M(x,y)\,\vec{i} + N(x,y)\,\vec{j}$，  
+求曲线 $L$ 使与力场处处垂直。
+
+\textbf{解答：} 设曲线 $L$: $y = y(x)$，  
+则 $L$ 在 $Q$ 点处的斜率为
+\[
+\frac{dy}{dx}
+\]
+
+向量切线方向在 $Q$ 点的斜率 $\tan \theta = \frac{N(x,y)}{M(x,y)}$
+\[
+\frac{dy}{dx} = -\frac{1}{\tan \theta} = -\frac{M(x,y)}{N(x,y)} \quad \Rightarrow \quad M(x,y)\,dx + N(x,y)\,dy = 0. \tag{$\ast$}
+\]
+
+若 $\frac{\partial M}{\partial y} = \frac{\partial N}{\partial x}$，则 (1) 式为全微分方程，  
+即 $\exists u(x,y)$ s.t.
+\[
+M(x,y) = \frac{\partial u}{\partial x}, \quad N(x,y) = \frac{\partial u}{\partial y}
+\]
+
+即方程化为
+\[
+du = \frac{\partial u}{\partial x} dx + \frac{\partial u}{\partial y} dy
+\]
+
+通解为
+\[
+u(x,y) = C, \quad C \text{ 为任意常数}.
+\]
+
+
+\subsection*{1. 定义}  
+设一阶拟线性微分方程的微分形式为
+\[
+M(x,y)\,dx + N(x,y)\,dy = 0 \tag{$\ast$}
+\]
+
+其中 $M(x,y), N(x,y)$ 在区域 $G$ 内连续且有一阶连续偏导数。  
+
+若存在可微函数 $u(x,y)$ s.t.
+\[
+du(x,y) = M(x,y)\,dx + N(x,y)\,dy
+\]
+
+即 $\frac{\partial u}{\partial x} = M(x,y), \quad \frac{\partial u}{\partial y} = N(x,y)$，  
+则称方程 ($\ast$) 为全微分方程，  
+或全微分形式。$u(x,y)$ 称为 $M(x,y)dx + N(x,y)dy$ 的一个原函数。
+
+
+\paragraph*{例1} 
+\begin{itemize}
+\item $x\,dx + y\,dy = 0  \implies  d\!\left(\tfrac{1}{2}x^2 + \tfrac{1}{2}y^2\right) = 0$
+
+\item $y\,dx - x\,dy = 0 \implies d(\frac{x}{y})=0$ 
+\end{itemize}
+
+
+
+
+\paragraph*{Thm.} 
+设 $M(x,y), N(x,y)$ 在某单连通区域 $G$ 内连续可微，则方程
+\[
+M(x,y)dx + N(y,y)dy = 0 \tag{$\ast$}
+\]
+
+是全微分方程 
+\[
+\;\;\;\Leftrightarrow \frac{\partial M}{\partial x} = \frac{\partial N}{\partial b},\; \forall (b,y)\in G \tag{$\ast\ast$}
+\]
+
+且当 $(\ast\ast)$ 成立时，原函数 $u(x,y)$ 可取为
+\[
+u(x,y) = \int_{(x_0,y_0)}^{(x,y)} M(x,y)dx + N(x,y)dy= \int_{x_0}^x M(x,y_0)\,dx + \int_{y_0}^y N(x,y)\,dy
+\]
+
+其中 $(x_0,y_0)\in G$ 是任意取定一点。
+
+或：
+\[
+u(x,y) = \int_{y_0}^y N(x_0,y)\,dy + \int_{x_0}^x M(x,y)\,dx
+\]
+
+
+\paragraph*{\proof}  
+
+$\Rightarrow$ $(\ast)$ 是全微分方程，$\exists u(x,y)$ s.t. $M(x,y)=\frac{\partial u}{\partial x}, N(x,y)=\frac{\partial u}{\partial y}$。  
+
+由 $M,N \in C',\;\; \frac{\partial M}{\partial y} = \frac{\partial}{\partial y}\!\left(\frac{\partial u}{\partial x}\right) = \frac{\partial}{\partial x}\!\left(\frac{\partial u}{\partial y}\right) = \frac{\partial N}{\partial x}$  
+
+
+$\Leftarrow$ 若 $\frac{\partial M}{\partial y} = \frac{\partial N}{\partial x}$，  
+设法证 $\exists u(x,y)$ s.t. $\frac{\partial u}{\partial x} = M(x,y), \frac{\partial u}{\partial y} = N(x,y)$。  
+
+对 $\frac{\partial u}{\partial x} = M(b,y)$ 两边关于 $x$ 积分，得：
+\[
+\int_{x_0}^x \frac{\partial u}{\partial x}\,dx = \int_{x_0}^x M(x,y)\,dx
+\]
+
+即
+\[
+u(x,y) - u(x_0,y) = \int_{x_0}^x M(x,y)\,dx
+\]
+
+\[
+u(x,y) = \int_{x_0}^x M(x,y)\,dx + \varphi(y), \quad 其中 \;\;\varphi(y)=u(x_0,y)
+\]
+
+
+两边关于 $y$ 求导：
+\[
+\frac{\partial u}{\partial y} = \int_{x_0}^x \frac{\partial M}{\partial y}(x,y)\,dx + \varphi'(y) = N(x,y)
+\]
+
+由 $\frac{\partial M}{\partial y} = \frac{\partial N}{\partial x}$：
+\[
+\int_{x_0}^x \frac{\partial M}{\partial y}(x,y)\,dx + \varphi'(y) = \int_{x_0}^x \frac{\partial N}{\partial x}(x,y)\,dx + \varphi'(y) = N(x,y)
+\]
+
+\[
+N(x,y) - N(x_0,y) + \varphi'(y) = N(x,y) \;\;\Rightarrow\;\; \varphi'(y) = N(x_0,y)
+\]
+
+因此
+\[
+\varphi(y) - \varphi(y_0) = \int_{y_0}^y N(x_0,y)\,dy
+\]
+
+令 $\varphi(y_0)=0$，得
+\[
+\varphi(y) = \int_{y_0}^y N(b_0,y)\,dy
+\]
+
+于是
+\[
+u(x,y) = \int_{x_0}^x M(x,y)\,dx + \int_{y_0}^y N(x_0,y)\,dy
+\]
+
+因此 $(\ast)$ 式为全微分方程。
+
+\paragraph*{Rem.} 
+\begin{itemize} 
+\item 若 $u(x,y)$ 是 $Mdx+Ndy$ 的一个原函数，则 $u(x,y)+C$ 也是解；  
+\item $\frac{\partial M}{\partial y} = \frac{\partial N}{\partial x} \;\Rightarrow\; Mdx+Ndy=0$ 是全微分方程。
+\item 若 $\frac{\partial M}{\partial y} = \frac{\partial N}{\partial x}$，则 $Mdx+Ndy$ 的一个原函数为
+$
+u(x,y) = \int_{x_0}^x M(x,y)\,dx + \int_{y_0}^y N(x_0,y)\,dy
+$
+其中 $(x_0,y_0)$ 是 $G$ 内任一点。
+\end{itemize}
+
+
+\paragraph*{例2} 
+求解方程 $xy\,dx + (\frac{x^2}{2}+\frac{1}{y})\,dy = 0$
+
+\paragraph*{解2} 
+$M = xy,\; N = \frac{x^2}{2}+\frac{1}{y}$
+
+\[
+\frac{\partial M}{\partial y} = x,\quad \frac{\partial N}{\partial x} = x
+\]
+
+\[
+u(x,y) = \int_{(0,1)}^{(x,y)} xy\,dx + (\frac{x^2}{2}+\frac{1}{y})\,dy
+= \int_{0}^x xdx + \int_{1}^y (\frac{x^2}{2}+\frac{1}{y})\,dy
+= \frac{1}{2}x^2y+\ln|y|
+\]
+
+通解：$\frac{1}{2}x^2y + \ln|y|= C,\; C \text{ 为任意常数}$
+
+
+\paragraph*{另解} 
+$xy\,dx+(\frac{x^2}{2}+\frac{1}{y})\,dy=0$
+
+\[
+xy\,dx+\frac{x^2}{2}\,dy = d\!\left(\tfrac{1}{2}x^2y\right),\ \ \frac{1}{y}dy=d(\ln|y|)
+\]
+
+因此有通解 $\frac{1}{2}x^2y + \ln|y|= C,\; C \text{ 为任意常数}$
+
+
+\paragraph*{例3} 
+求解方程 $(3b^2+6by)\,db+(4y^3+6b^2y)\,dy=0$
+
+\paragraph*{解3}  
+$M=3x^2+6xy^2,\; N=4y^3+6x^2y$
+
+\[
+\frac{\partial M}{\partial y} = 12xy,\quad \frac{\partial N}{\partial x} = 12xy
+\]
+
+\[
+u(x,y) = \int_{0}^x 3x^2dx + \int_{0}^y (4y^3+6x^2y)\,dy
+= x^3+y^4+3x^2x^2
+\]
+
+
+所以方程有通解
+\[
+x^3+y^4+3x^2y^2 = C,\quad C \text{ 为任意常数}.
+\]
+
+
+
+\subsection*{2.初值问题的解}
+
+\[
+\begin{cases}
+M(x,y)\,db+N(x,y)\,dy=0, \\
+y(x_0)=y_0
+\end{cases}
+\]
+
+通解
+\[
+u(x,y)=\int_{x_0}^x M(x,y)\,dx+\int_{y_0}^y N(x_0,y)\,dy+C
+\]
+
+特解：$C=0$
+
+
+
+\subsection*{3. 全微分方程的解法}
+
+(1) 公式法 \quad (2) 分项组合法 \quad (3) 积分法  
+
+
+\paragraph*{例4}  \quad $3y\,dx+(\frac{x^2}{2}+\frac{1}{y})\,dy=0$
+
+\paragraph*{解4：积分法}
+\[
+\frac{\partial u}{\partial x}=xy,\quad \frac{\partial u}{\partial y}=\frac{x^2}{2}+\frac{1}{y}
+\]
+
+关于$x$的积分为：
+\[
+u= \frac{1}{2}x^2y+\varphi(y)
+\]
+
+对上式关于 $y$ 求导：
+\[
+\frac{\partial u}{\partial y}=\frac{1}{2}x^2+\varphi'(y)=\frac{x^2}{2}+\frac{1}{y}
+\]
+
+因此 $\varphi(y)=\ln|y|+C,\ u=\frac{1}{2}x^2y+\ln|y|$
+
+
+通解：
+\[
+\frac{1}{2}x^2y+\ln|y|=C
+\]
+
+\paragraph*{Rem.分项组合法：} 根据常见的全微分公式  
+
+
+\paragraph*{例5} \quad $\dfrac{y\,dx-x\,dy}{x^2+y^2}=0$
+
+\paragraph*{解5}  
+\[
+\frac{\partial M}{\partial y}
+=\frac{\partial}{\partial y}\left(\frac{y}{x^2+y^2}\right)
+=\frac{x^2-y^2}{(x^2+y^2)^2}=\frac{\partial N}{\partial x }
+\]
+
+\[
+d(\arctan \frac{x}{y})=(\frac{1}{1+(\frac{x}{y})^2}\cdot\frac{1}{y})dx+(\frac{1}{1+(\frac{x}{y})^2}\cdot (-\frac{x}{y^2}))dy=\frac{ydx-xdy}{x^2+y^2}
+\]
+
+因此通解：
+\[
+\arctan\frac{x}{y}=C,\quad C\text{ 为任意常数.}
+\]
+
+
+考虑方程 $y\,dx-x\,dy=0$  
+
+方程两边同乘 $\frac{1}{x^2+y^2}$ 有
+$
+\frac{y\,dx-x\,dy}{x^2+y^2}=0
+$
+
+方程两边同乘 $\frac{1}{y^2}$ 有
+$
+\frac{y\,dx-x\,dy}{y^2}=0
+$
+
+\paragraph*{Rem.} 积分因子： $\frac{1}{x^2+y^2}$ 与 $\frac{1}{y^2}$ 不唯一
+
+\section*{二、积分因子}
+
+\subsection*{1. 定义}  
+
+对于微分方程 
+\[
+M(x,y)\,dx + N(x,y)\,dy = 0 \tag{$\ast$}
+\]
+
+若方程 $(\ast)$ 不是全微分方程，但存在一个连续可微函数 $\mu=\mu(x,y)$，  
+s.t.
+\[
+\mu(x,y)M(x,y)\,db + \mu(x,y)N(x,y)\,dy = 0 \tag{$\ast\ast$}
+\]
+
+为全微分方程，则 $\exists \, v = v(x,y)$ s.t.
+\[
+dv(x,y) = \mu(x,y)M(x,y)\,dx + \mu(x,y)N(x,y)\,dy
+\]
+
+则称$\mu(x,y)$为方程$(\ast)$的一个积分因子
+
+
+\paragraph*{Rem.} 
+(i) 可以证明，$(\ast)$ 式与 $(\ast\ast)$ 式为同解方程。  
+(ii) $\mu(x,y)$ 为积分因子的充要条件。  
+
+
+\paragraph*{Thm.1} 
+若 $M(x,y), N(x,y), \mu(x,y)$ 均连续可微，则 $\mu(x,y)$ 为 $(\ast)$ 的积分因子  
+$\Longleftrightarrow N\cdot \frac{\partial \mu}{\partial x} - M\cdot \frac{\partial \mu}{\partial y} = \left(\frac{\partial M}{\partial y} - \frac{\partial N}{\partial x}\right)\mu$  
+
+
+
+\paragraph*{Thm.2} 
+设 $M(x,y), N(x,y), \varphi(x,y)$ 在区域 $G$ 内连续可微，则方程 $(\ast)$ 有形如 $\mu = \mu[\varphi(x,y)]$ 的积分因子  
+$\Longleftrightarrow$  
+\[
+\frac{\frac{\partial M}{\partial y} -  \frac{\partial \varphi}{\partial x}}{N\frac{\partial \varphi}{\partial y} - M\frac{\partial \varphi}{\partial y}} 
+\]
+
+仅是 $\varphi$ 的函数，记为 $f(\varphi)$。  则 $\mu = e^{\int f(\varphi)\,d\varphi} = e^{G(\varphi)}$ 是积分因子。  
+
+\paragraph*{\proof}  
+
+$\Rightarrow$ 若 $(\ast)$ 有积分因子 $\mu$，且 $\mu=\mu[\varphi(x,y)]$，则：  
+\[
+\frac{d\mu}{d\varphi}\left(N\frac{\partial \varphi}{\partial x} - M\frac{\partial \varphi}{\partial y}\right)
+= \left(\frac{\partial M}{\partial y} - \frac{\partial N}{\partial x}\right)\mu
+\]
+
+即
+\[
+\frac{d\mu}{\mu} = \frac{\frac{\partial M}{\partial y}-\frac{\partial N}{\partial x}}{N\frac{\partial \varphi}{\partial x} - M\frac{\partial \varphi}{\partial y}}\,d\varphi
+= f(\varphi)\,d\varphi
+\Rightarrow \mu = e^{\int f(\varphi)\,d\varphi} = e^{G(\varphi)}
+\]
+
+
+
+$\Leftarrow$ 若 
+$
+\frac{\frac{\partial M}{\partial y}-\frac{\partial N}{\partial x}}{N\frac{\partial \varphi}{\partial x} - M\frac{\partial \varphi}{\partial y}}
+$
+仅关于 $\varphi$，  往证 $\mu = e^{G(\varphi)}$ 是方程的解  
+
+\[
+N\frac{\partial \mu}{\partial x} - M\frac{\partial \mu}{\partial y}
+= (N\frac{\partial \varphi}{\partial x} - M\frac{\partial \varphi}{\partial y}) e^{G(\varphi)} f(\varphi)
+= \left(\frac{\partial M}{\partial y} - \frac{\partial N}{\partial x}\right)\mu
+\]
+
+因此 $\mu = e^{G(\varphi)}$ 是积分因子。
+
+
+
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{2} % 调整行高
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{类型} & \textbf{条件} & \textbf{积分因子} \\
+\hline
+$\varphi(x,y)=b,\;\mu(x)=x$ &
+$\dfrac{\tfrac{\partial M}{\partial y}-\tfrac{\partial N}{\partial x}}{N} = f(x)$ &
+$e^{\int f(x)\,dx}$ \\
+\hline
+$\varphi(x,y)=y,\;\mu(y)=y$ &
+$\dfrac{\tfrac{\partial M}{\partial y}-\tfrac{\partial N}{\partial x}}{-M} = f(y)$ &
+$e^{\int f(y)\,dy}$ \\
+\hline
+\end{tabular}
+\end{table}
+
+
+
+
+\paragraph*{例6}
+求解方程 $(y^2-3xy+1)\,dx+(xy-x^2)\,dy=0$
+
+\paragraph*{解6}
+\[
+M = y^2-3xy+1, \quad N = xy-x^2
+\]
+
+\[
+\frac{\partial M}{\partial y} = 2y-3x, \quad \frac{\partial N}{\partial x} = y - 2x
+\]
+
+\[
+\frac{\partial M}{\partial y}-\frac{\partial N}{\partial x} = y-x
+\]
+
+\[
+\frac{\tfrac{\partial M}{\partial y}-\tfrac{\partial N}{\partial x}}{N} 
+= \frac{1}{x}
+\]
+
+仅是 $x$ 的函数。  
+
+积分因子：
+\[
+\mu = e^{\int \frac{1}{x}dx} = x
+\]
+
+方程两边同乘以 $x$：
+\[
+(xy^2-3x^2y+x)\,dx + (x^2y-x^3)\,dy=0
+\]
+
+\[
+d\!\left(\tfrac{1}{2}x^2y^2 - x^3y + \frac{1}{2}x^2\right) = 0
+\]
+
+通解：
+\[
+\tfrac{1}{2}x^2y^2 - x^3y + \frac{1}{2}x^2 = C
+\]
+
+
+\paragraph*{例7}
+求解方程 $(xy+y^2)\,dx+(xy+y+1)\,dy=0$
+
+\paragraph*{解7} 
+
+\[
+\frac{\partial M}{\partial y}=x+2y, \quad \frac{\partial N}{\partial x}=y
+\]
+
+\[
+\frac{\tfrac{\partial M}{\partial y}-\tfrac{\partial N}{\partial x}}{-M} 
+= -\frac{1}{y}，\text{仅是y的函数}
+\]
+
+积分因子：  
+\[
+\mu = e^{\int -\frac{1}{y} \,dy}=\frac{1}{y}
+\]
+
+
+当 $y\neq 0$ 时：
+\[
+(x+y)\,dx+(x+\frac{1}{y}+1)\,dy=0
+\]
+
+\[
+d\!\left(\tfrac{1}{2}x^2+xy+y+\ln|y|\right)=0
+\]
+
+因此通解：
+\[
+\tfrac{3}{2}x^2+xy+y+\ln|y|=C
+\]
+
+当 $y=0$ 时也是解。
+
+
+\paragraph*{例8} 
+求解方程 $(y^2+2x^2y)\,dx+(xy+x^3)\,dy=0$
+
+\paragraph*{解8}  
+
+\[
+\frac{\partial M}{\partial y} = 2y+2x^2, \quad \frac{\partial N}{\partial x} = y+3x^2
+\]
+
+\[
+\frac{\partial M}{\partial y}-\frac{\partial N}{\partial x} = y-x^2
+\]
+
+设方程有积分因子 $\mu=\mu(x^\alpha y^\beta)$  
+
+\[
+\frac{\frac{\partial M}{\partial y}-\frac{\partial N}{\partial x}}{\alpha \tfrac{N}{x}-\beta \tfrac{M}{y}}\cdot \frac{1}{x^\alpha y^\beta}
+= \frac{y-x^2}{\alpha (y+x^2)-\beta (y+2x^2)}\cdot \frac{1}{x^\alpha y^\beta}
+\]
+  
+令
+\[
+\begin{cases}
+\alpha-\beta = 1, \\
+\alpha-2\beta=-1
+\end{cases}
+\quad \Rightarrow \quad \alpha=3,\; \beta=2
+\]
+
+
+因此积分因子：
+\[
+\mu = e^{\int \tfrac{1}{x^3y^2}\,dy} = x^3y^2
+\]
+
+将方程两边同乘 $\mu=x^3y^2$：
+\[
+(x^3y^4+2x^5y^3)\,dx + (x^4y^3+x^6y^2)\,dy = 0
+\]
+
+这是一个全微分方程：  
+\[
+d\!\left(\frac{1}{4}x^4y^4+\tfrac{1}{3}x^6y^3\right)=0
+\]
+
+通解：
+\[
+\frac{1}{4}x^4y^4 + \tfrac{1}{3}x^6y^3 = C
+\]
+
+
+
+
+
+
+\mysection{§2.4 一阶隐式微分方程}
+
+\section*{一、一阶隐式方程}
+
+\[
+F(x, y, y') = 0 \tag{$\ast$}
+\]
+
+\subsection*{1. 若可化为 $y' = f(x, y)$}根据显式方程求解即可。
+
+\paragraph*{例1} 求解方程 $y'^2 - (x + y)y' + xy = 0$
+
+\paragraph*{解1} 
+\[
+(y' - x)(y' - y) = 0
+\]
+所以通解为 $y = \frac{1}{2}x^2 + C$ 或 $y = Ce^x$
+
+
+\subsection*{2. 可解出$y$的方程：$y = f(x, y')$  ,其中 $f \in C^{(1)}$}
+
+令 $y' = p$，则 $y = f(x, p) $
+
+两边关于 $x$ 求导：
+\[
+p = \frac{\partial f}{\partial x} + \frac{\partial f}{\partial p}\frac{dp}{dx}
+\]
+
+即
+\[
+\frac{dp}{dx} = \frac{p - \frac{\partial f}{\partial p}}{\frac{\partial f}{\partial x}} = F(x, p)
+\]
+
+（关于 $x,p$ 的一阶显式微分方程）
+
+
+① 若 $p = \varphi(x, c)$，代入有 $y = f[x, \varphi(x, c)]$  
+
+② 若 $x = \psi (p, c)$，代入有
+\[
+\begin{cases}
+x = \psi (p, c), \\
+y = f(x, p)
+\end{cases}
+\]
+其中 $p$ 为参数，$c$ 为任意常数。  
+
+③ 若 $\Phi(x, p, c) = 0$，代入有
+\[
+\begin{cases}
+\Phi(x, p, c) = 0, \\
+y = f(x, p)
+\end{cases}
+\]
+其中 $p$ 为参数，$c$ 为任意常数。
+
+
+\paragraph*{例2} 求解方程 $\left(\frac{dy}{dx}\right)^3 + 2x\frac{dy}{dx} - y = 0$
+
+\paragraph*{解2} 
+\[
+y = p^3 + 2xp, \quad p = \frac{dy}{dx}
+\]
+
+上式左边关于 $x$ 求导：
+\[
+p = 3p^2\frac{dp}{dx} + 2p + 2x\frac{dp}{dx}
+\]
+
+即：
+\[
+3p^2dp+2xdp+pdx=0
+\]
+
+有积分因子 $\mu(p) = p$  
+\[
+(3p^3 + 2xp)\,dp + p^2\,dx = 0 \quad (p \neq 0)
+\]
+
+\[
+d\!\left(\tfrac{3}{4}p^4 + p^2x\right) = 0
+\]
+
+通解：
+\[
+\tfrac{3}{4}p^4 + p^2x = C
+\]
+
+即：
+\[
+x = C p^{-2} - \tfrac{3}{4}p^2
+\]
+
+代入得：
+\[
+y = p^3 + 2xp = \frac{2C}{p}-\frac{1}{2}p^3
+\]
+
+
+
+故原方程为隐式通解为：
+\[
+\begin{cases}
+x = \dfrac{C}{p^2} - \dfrac{3}{4}p^2,\\[6pt]
+y = \dfrac{2C}{p} - \dfrac{1}{2}p^3
+\end{cases}
+\]
+其中 $p$ 为参数，$C$ 为任意常数。  当 $p=0$ 时，有特解 $y=0$。
+
+
+\paragraph*{例3} 求解方程 $y = \left(\dfrac{dy}{dx}\right)^2 - x\dfrac{dy}{dx} + \frac{x^2}{2} $
+
+\paragraph*{解3}
+令 $\dfrac{dy}{dx} = p$，则 $y = p^2 - xp + \frac{x^2}{2}$。
+
+两边对 $x$ 求导：
+\[
+p = 2p\dfrac{dp}{dx} - x\dfrac{dp}{dx} + x
+\]
+
+\[
+2p\dfrac{dp}{dx}-2p-x\dfrac{dp}{dx}+x=0
+\]
+
+\[
+(\dfrac{dp}{dx}-1)(2p-x)=0
+\]
+
+因此 $\dfrac{dp}{dx}=1$ 或 $2p=x$。  
+
+有通解：
+\[
+y = (x + C)^2 - x(x + C) + \tfrac{1}{2}x^x
+\]
+
+特解为 $y = \tfrac{1}{4}x^2$。（几何上称为“包络线”）
+
+
+
+\subsection*{3. 可解出$x$的方程：$x = f(y, y')$ }
+
+令 $y' = p$，则 $x = f(y, p)$ 
+
+两边关于 $y$ 求导：
+\[
+\frac{1}{p}= \frac{\partial f}{\partial y} + \frac{\partial f}{\partial p}\frac{dp}{dy}
+\]
+
+即
+\[
+\frac{dp}{dy} = \frac{\frac{1}{p} - \frac{\partial f}{\partial p}}{\frac{\partial f}{\partial p}} = G(y, p)
+\]
+
+（关于 $y, p$ 的一阶显式微分方程）
+
+① 若 $\Phi(y, p, c)=0$，则原方程通解为：
+\[
+\begin{cases}
+\Phi(y, p, c)=0,\\
+x=f(y, p)
+\end{cases}
+\]
+其中 $p$ 为参数，$c$ 为任意常数。
+
+
+\paragraph*{例4}求解方程 $x\frac{1}{y}=y'^2$
+
+\paragraph*{解4}
+\[
+x = y p^2,\quad p = y'
+\]
+
+两边对 $y$ 求导：
+\[
+\frac{1}{p}=p^2+2yp\frac{dp}{dy}
+\]
+
+\[
+\dfrac{dp}{dy} = \dfrac{\frac{1}{p}-p^2}{2py}=\frac{1-p^3}{2yp^2}
+\]
+
+\[
+\frac{p^2}{1-p^3}dp=\frac{1}{2y}dy
+\]
+
+积分：
+\[
+-\tfrac{1}{3}\ln(1 - p^2) = \tfrac{1}{2}\ln|y| + C
+\]
+
+原方程通解：
+\[
+-\tfrac{1}{3}\ln(1 - p^2) = \tfrac{1}{2}\ln|y| + C, x=yp^2
+\]
+
+其中 $p$ 为参数，$C$ 为任意常数。当 $p = 1$ 时显然也是解；$y = 0$ 时也是解。
+
+
+
+
+\paragraph*{例5}
+求解方程 $y = xy' + \varphi(y')$，其中 $\varphi \in C^{(2)}$ 且 $\varphi'' \ne 0$。（Clairaut Equation）
+
+\paragraph*{解5} 
+令 $y' = p$，则 $y = xp + \varphi(p)$。
+
+两边对 $x$ 求导：
+\[
+p = p + x\dfrac{dp}{dx} + \varphi'(p)\dfrac{dp}{dx}
+\]
+\[
+[x + \varphi'(p)]\dfrac{dp}{dx} = 0
+\]
+
+① 若 $\dfrac{dp}{dx} = 0$，则 $p = C$，此时原方程通解为：
+\[
+\begin{cases}
+y = xp+\varphi(p)
+p=C
+\end{cases}
+\]
+
+② 若 $x + \varphi'(p) = 0$，此时原方程的\textbf{一个特解}为：
+\[
+\begin{cases}
+y = -p\varphi'(p) + \varphi(p),\\[3pt]
+x = -\varphi'(p)
+\end{cases}
+\]
+
+\paragraph*{Rem.} 上述方程称为 Clairaut 方程。
+
+
+\paragraph*{例6}
+求解方程 $y = xy' + (y')^2$
+
+\paragraph*{解6}
+\[
+\varphi(u) = u^2,\quad \varphi'(u) = 2u,\quad \varphi''(u) = 2 \ne 0
+\]
+
+通解为：
+\[
+y = Cx^2 + C^2
+\]
+
+特解为：
+\[
+\begin{cases}
+y = -p\varphi'(p) + \varphi(p) = -2p^2 + p^2 = -p^2,\\[3pt]
+x = -\varphi'(p) = -2p
+\end{cases}
+\]
+
+即 $y = -\dfrac{x^2}{4}$。
+
+
+\subsection*{4. 不显含 $y$ 的方程 $F(x, y') = 0$}
+
+令 $y' = p$，则 $F(x, p) = 0$。
+
+设其为参数方程：
+\[
+\begin{cases}
+x = \varphi(t),\\
+p = \psi(t)
+\end{cases}
+\]
+
+由于 $dy = p\,dx = \psi(t)\,d\varphi(t)$，从而 $dy = \psi(t)\varphi'(t)\,dt$
+
+两边积分得：
+\[
+y = \int \psi(t)\varphi'(t)\,dt + C
+\]
+
+原方程的参数形式通解：
+\[
+\begin{cases}
+y = \int \psi(t)\varphi'(t)\,dt + C,\\[3pt]
+x = \varphi(t)
+\end{cases}
+\]
+
+其中 $t$ 为参数，$C$ 为任意常数。
+
+
+
+\paragraph*{例7}
+求解方程 $x\sqrt{1 + (y')^2} = y'$
+
+\paragraph*{解7}
+令 $y' = p$，则 $F(x, p) = x\sqrt{1 + p^2} - p = 0$
+
+设：
+\[
+x = \sin t, \quad p = \tan t
+\]
+
+由于 $dy = p\,dx$，有
+\[
+y = \int \tan t \cos t\,dt = \int \sin t\,dt = -\cos t + C
+\]
+
+原方程通解：
+\[
+\begin{cases}
+x = \sin t,\\
+y = -\cos t + C
+\end{cases}
+\]
+
+
+
+
+
+\paragraph*{例8}
+求解方程 $x^3 + xy'^3 - 3xy' = 0$
+
+\paragraph*{解8}
+令 $y' = p$，则 $x^3 + p^3 - 3xp = 0$
+
+设 $x = t^3$，则
+\[
+p = \frac{3t^2}{1 + t^3}, x = \frac{3t}{1+t^3}
+\]
+
+由于 $dy = p\,dx = \frac{3t^2}{1 + t^3} \cdot \frac{3(1+t^3)-3t\cdot 3t^2}{(1+t^3)^2} dt= \frac{9t^2(1 -2t^3)}{(1+t^3)^3}\,dt$
+
+
+\[
+y = \int \frac{9t^3(1 - 2t^3)}{(1 + t^3)^3}\,dt + C=\frac{3}{2}\cdot \frac{1+4t^3}{(1+t^3)^3} + C
+\]
+
+
+
+原方程参数形式通解：
+\[
+\begin{cases}
+x = \dfrac{3t}{1 + t^3},\\[6pt]
+y = \frac{3}{2}\cdot \frac{1+4t^3}{(1+t^3)^3} + C
+\end{cases}
+\]
+
+\subsection*{5. 不显含 $x$ 的方程 $F(y, y') = 0$}
+
+令 $y' = p$，则 $F(y, p) = 0$。  
+设其为参数方程：
+\[
+\begin{cases}
+y = \varphi(t),\\
+p = \psi(t),
+\end{cases}
+\quad t \text{ 为参数。}
+\]
+
+由于 $dy = p\,dx$，故 $dx = \dfrac{dy}{p} = \dfrac{\varphi'(t)}{\psi(t)}\,dt$
+
+两边积分得：
+\[
+x = \int \frac{\varphi'(t)}{\psi(t)}\,dt + C
+\]
+
+原方程的参数形式通解：
+\[
+\begin{cases}
+x = \int \dfrac{\varphi'(t)}{\psi(t)}\,dt + C,\\[6pt]
+y = \varphi(t)
+\end{cases}
+\]
+
+当 $p = 0$ 时，若 $F(y, 0) = 0$，则有常数解 $y = k$。
+
+
+\paragraph*{例9}
+求解方程 $y^2(1 - y') = (2 - y')^2$
+
+\paragraph*{解9} 
+令 $y' = p$，则 $y^2(1 - p) = (2 - p)^2$
+
+设 $2 - p = ty$，则 $ty-1=t^2,y=t+\frac{1}{t},p=1-t^2(p \neq 0)$，得
+
+
+又因为 $dx = \frac{1}{p}dy = \frac{1-\frac{1}{t}}{1-t^2}dt = -\frac{1}{t^2}dt, x=\int -\frac{1}{t^2}dt=\frac{1}{t}+C$
+
+原方程通解：
+\[
+\begin{cases}
+x = \frac{1}{t} + C,\\[3pt]
+y = t+\frac{1}{t}
+\end{cases}
+\]
+
+或写作：
+\[
+y = x-C+\frac{1}{x-C}
+\]
+
+当 $p = 0$ 时，有 $y^2 = 4$，即 $y = \pm 2$ 也是特解。
+
+
+\subsection*{6. 一般的一阶隐式方程$F(x, y, y') = 0$}
+
+令 $y' = p$，则 $F(x, y, p) = 0$。
+
+令
+\[
+x = f(u, v), \quad y = g(u, v), \quad p = h(u, v)
+\]
+
+代入：
+\[
+dy = p\,dx, \quad \frac{\partial g}{\partial u}du + \frac{\partial g}{\partial v}dv = h(u, v)\left(\frac{\partial f}{\partial u}du + \frac{\partial f}{\partial v}dv\right)
+\]
+
+即：
+\[
+M(u, v)\,du + N(u, v)\,dv = 0
+\]
+
+求出其通解或特解，从而可求出原方程的通解。
+
+
+
+\paragraph*{例10} 求解方程 $\left(\dfrac{dy}{dx}\right)^2 + y - x = 0$
+
+\paragraph*{解10} 
+令 $p = \dfrac{dy}{dx}$，则 $p^2 + y - x = 0$
+
+设 $x = u,\; p = v,\; y = u - v^2$
+
+由 $dy = p\,dx$，
+\[
+d(u - v^2) = v\,du \quad \Rightarrow \quad (1 - v)\,du = 2v\,dv
+\]
+
+积分得：
+\[
+u = -2v - \ln(v - 1)^2 + C \quad \text{特解为$v=1$}
+\]
+
+原方程通解：
+\[
+\begin{cases}
+x = -2v - \ln(v - 1)^2 + C,\\
+y = -2v - \ln(v - 1)^2 - v^2 + C
+\end{cases}
+\]
+
+$C$ 为任意常数。
+
+特解：$y = x - 1$
+
+
+\paragraph{思考：}
+\begin{enumerate}
+  \item Riccati 方程：$\frac{dy}{dx} = P(x)y^2 + Q(x)y + R(x)$ 除特例外，一般没有初等解法.
+  \item $\frac{dy}{dx} = 2\sqrt{y},y(0)=0$的解不唯一，$y \equiv 0$，$y = x^2$ 都是解。
+  \item 考虑$\frac{dy}{dx} = f(x, y),y(x_0)=y_0$ 的解的\textbf{存在性、唯一性}以及\textbf{连续性}。
+\end{enumerate}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
