@@ -1,4 +1,4 @@
-# OUC-Haide-ODE-2025-2026-NOTES
+# OUC_Haide_ODE_NOTES
 
 
 本项目是根据2024–2025学年OUC-Haide课程的课堂讲义编纂的常微分方程（Ordinary Differential Equations, ODE）讲义，使用LaTeX编写，旨在为学习和复习该课程的同学提供系统、可扩展的参考资料。
